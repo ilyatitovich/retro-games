@@ -1,4 +1,4 @@
-const GAME_SPEED = 100;
+const GAME_SPEED = 100; // Milliseconds per frame
 
 const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
@@ -13,7 +13,7 @@ const speedLevels = [
   { score: 90, speed: 70 },
   { score: 60, speed: 80 },
   { score: 30, speed: 90 },
-  { score: 0, speed: 100 },
+  { score: 0, speed: GAME_SPEED },
 ];
 let snake = [
   { x: 10, y: 10 },
@@ -24,7 +24,7 @@ let food = { x: 15, y: 15 };
 let dx = 1;
 let dy = 0;
 let score = 0;
-let gameSpeed = GAME_SPEED; // Milliseconds per frame
+let gameSpeed = GAME_SPEED;
 let gameOver = false;
 let gameEnded = false; // New: track if game is stopped
 let lastUpdate = 0;
@@ -47,19 +47,16 @@ function updateSpeed() {
     if (score >= level.score) {
       if (gameSpeed !== level.speed) {
         gameSpeed = level.speed;
-        // if (gameLoop) clearInterval(gameLoop);
-        // gameLoop = setInterval(update, gameSpeed);
       }
       break;
     }
   }
 }
 
-// Draw game state
-function draw() {
+function drawGame() {
   if (!ctx) return;
 
-  // Game grid
+  // Grid
   ctx.fillStyle = "#1a2a1a";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -85,10 +82,10 @@ function draw() {
   );
 }
 
-function drawGameOver() {
+function drawGameOverMenu() {
   if (!ctx) return;
   // Semi-transparent background
-  ctx.fillStyle = "rgba(26, 42, 26, 0.8)";
+  ctx.fillStyle = "rgba(26, 42, 26)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   // Game Over text
   ctx.fillStyle = "#4aff4a";
@@ -117,25 +114,18 @@ function drawGameOver() {
   ctx.fillText("No", noX + buttonWidth / 2, buttonY + buttonHeight / 2);
 }
 
-function drawGameEnded() {
-  if (!ctx) return;
-  ctx.fillStyle = "rgba(26, 42, 26, 0.8)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#4aff4a";
-  ctx.font = '48px "Courier New", Courier, monospace';
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("Game Ended", canvas.width / 2, canvas.height / 2);
+function handleGameEnded() {
+  window.location.href = "/";
 }
 
 // Update game state
 function update() {
   if (gameEnded) {
-    drawGameEnded();
+    handleGameEnded();
     return;
   }
   if (gameOver) {
-    drawGameOver();
+    drawGameOverMenu();
     return;
   }
 
@@ -143,10 +133,10 @@ function update() {
   const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
   // Check wall collision
-  if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-    endGame();
-    return;
-  }
+  //   if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+  //     endGame();
+  //     return;
+  //   }
   if (head.x < 0) head.x = tileCount - 1;
   else if (head.x >= tileCount) head.x = 0;
   if (head.y < 0) head.y = tileCount - 1;
@@ -174,7 +164,7 @@ function update() {
     snake.pop();
   }
 
-  draw();
+  drawGame();
 }
 
 // Generate new food position
@@ -201,7 +191,7 @@ function endGame() {
   playSound(220, 0.3);
   document.removeEventListener("keydown", handleInput);
   document.addEventListener("keydown", handleGameOverKey);
-  drawGameOver();
+  drawGameOverMenu();
 }
 
 function handleInput(e: KeyboardEvent) {
@@ -239,7 +229,6 @@ function handleGameOverKey(e: KeyboardEvent) {
   switch (e.key) {
     case "ArrowLeft":
     case "ArrowRight":
-      console.log("hi");
       gameOverSelection = gameOverSelection === 0 ? 1 : 0;
       break;
     case "Enter":
@@ -292,13 +281,13 @@ function gameLoop(currentTime: number) {
 }
 
 function render() {
-  draw(); // snake, food, score, etc.
+  drawGame(); // snake, food, score, etc.
 
   if (gameOver) {
-    drawGameOver(); // "Yes" / "No" with selection highlight
+    drawGameOverMenu(); // "Yes" / "No" with selection highlight
   }
 
   if (gameEnded) {
-    drawGameEnded();
+    handleGameEnded();
   }
 }

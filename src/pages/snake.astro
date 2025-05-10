@@ -12,7 +12,6 @@ import Layout from "../layouts/Layout.astro";
     <h1>Snake game</h1>
     <div id="score">Score: 0</div>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <div id="gameOver">Game Over!</div>
   </main>
 </Layout>
 
@@ -37,15 +36,5 @@ import Layout from "../layouts/Layout.astro";
     font-size: 24px;
     margin-bottom: 10px;
     text-shadow: 0 0 5px #4aff4a;
-  }
-  #gameOver {
-    display: none;
-    position: absolute;
-    color: #4aff4a;
-    font-size: 48px;
-    text-shadow: 0 0 10px #4aff4a;
-    background-color: rgba(26, 42, 26, 0.8);
-    padding: 20px;
-    border: 2px solid #4aff4a;
   }
 </style>
