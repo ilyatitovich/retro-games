@@ -32,17 +32,6 @@ let lastUpdate = 0;
 let animationFrameId: number | null = null;
 let gameOverSelection = 0; // 0 for Yes, 1 for No
 
-// Sound effects (simple beeps using Web Audio API)
-const audioContext = new AudioContext();
-function playSound(frequency: number, duration: number) {
-  const oscillator = audioContext.createOscillator();
-  oscillator.type = "sawtooth";
-  oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-  oscillator.connect(audioContext.destination);
-  oscillator.start();
-  oscillator.stop(audioContext.currentTime + duration);
-}
-
 function updateSpeed() {
   for (const level of speedLevels) {
     if (score >= level.score) {
@@ -158,7 +147,6 @@ function update() {
   if (head.x === food.x && head.y === food.y) {
     score += 10;
     scoreDisplay!.textContent = `Score: ${score}`;
-    playSound(440, 0.1); // Eat sound
     updateSpeed();
     generateFood();
   } else {
@@ -189,13 +177,12 @@ function generateFood() {
 // End game
 function endGame() {
   gameOver = true;
-  playSound(220, 0.3);
-  document.removeEventListener("keydown", handleInput);
-  enableGameOverInput();
+  window.removeEventListener("keydown", handleInput);
+  window.addEventListener("keydown", handleGameOverKey);
   drawGameOverMenu();
 }
 
-export function handleInput(e: KeyboardEvent) {
+function handleInput(e: KeyboardEvent) {
   if (gameOver || gameEnded) return;
   switch (e.key) {
     case "ArrowUp":
@@ -227,6 +214,7 @@ export function handleInput(e: KeyboardEvent) {
 
 function handleGameOverKey(e: KeyboardEvent) {
   if (gameEnded) return;
+
   switch (e.key) {
     case "ArrowLeft":
     case "ArrowRight":
@@ -237,7 +225,7 @@ function handleGameOverKey(e: KeyboardEvent) {
         startGame(); // Yes: restart
       } else {
         gameEnded = true; // No: stop game
-        document.removeEventListener("keydown", handleGameOverKey);
+        window.removeEventListener("keydown", handleGameOverKey);
       }
       break;
   }
@@ -259,7 +247,7 @@ function startGame() {
   gameEnded = false;
   gameOverSelection = 0;
   scoreDisplay!.textContent = `Score: ${score}`;
-  disableGameOverInput();
+  window.removeEventListener("keydown", handleGameOverKey);
   window.addEventListener("keydown", handleInput);
   lastUpdate = performance.now();
   animationFrameId = requestAnimationFrame(gameLoop);
@@ -289,56 +277,42 @@ function render() {
   }
 }
 
-function handleClickOrTap(e: MouseEvent | TouchEvent) {
-  if (!gameOver || gameEnded) return;
+// function handleClickOrTap(e: MouseEvent | TouchEvent) {
+//   if (!gameOver || gameEnded) return;
 
-  const rect = canvas.getBoundingClientRect();
-  const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
-  const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
+//   const rect = canvas.getBoundingClientRect();
+//   const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
+//   const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
 
-  const x = (clientX - rect.left) * (canvas.width / rect.width);
-  const y = (clientY - rect.top) * (canvas.height / rect.height);
+//   const x = (clientX - rect.left) * (canvas.width / rect.width);
+//   const y = (clientY - rect.top) * (canvas.height / rect.height);
 
-  const buttonWidth = 80;
-  const buttonHeight = 40;
-  const yesX = canvas.width / 2 - 100;
-  const noX = canvas.width / 2 + 20;
-  const buttonY = canvas.height / 2 + 20;
+//   const buttonWidth = 80;
+//   const buttonHeight = 40;
+//   const yesX = canvas.width / 2 - 100;
+//   const noX = canvas.width / 2 + 20;
+//   const buttonY = canvas.height / 2 + 20;
 
-  if (
-    x >= yesX &&
-    x <= yesX + buttonWidth &&
-    y >= buttonY &&
-    y <= buttonY + buttonHeight
-  ) {
-    startGame(); // Restart game
-  } else if (
-    x >= noX &&
-    x <= noX + buttonWidth &&
-    y >= buttonY &&
-    y <= buttonY + buttonHeight
-  ) {
-    gameEnded = true;
-    document.removeEventListener("keydown", handleGameOverKey);
-  }
-}
-
-function enableGameOverInput() {
-  canvas.addEventListener("click", handleClickOrTap);
-  canvas.addEventListener("touchstart", handleClickOrTap);
-  document.removeEventListener("keydown", handleInput);
-  document.addEventListener("keydown", handleGameOverKey);
-}
-
-function disableGameOverInput() {
-  canvas.removeEventListener("click", handleClickOrTap);
-  canvas.removeEventListener("touchstart", handleClickOrTap);
-  document.removeEventListener("keydown", handleGameOverKey);
-  document.addEventListener("keydown", handleInput);
-}
+//   if (
+//     x >= yesX &&
+//     x <= yesX + buttonWidth &&
+//     y >= buttonY &&
+//     y <= buttonY + buttonHeight
+//   ) {
+//     startGame(); // Restart game
+//   } else if (
+//     x >= noX &&
+//     x <= noX + buttonWidth &&
+//     y >= buttonY &&
+//     y <= buttonY + buttonHeight
+//   ) {
+//     gameEnded = true;
+//     window.removeEventListener("keydown", handleGameOverKey);
+//   }
+// }
 
 export function initGame() {
-  resizeCanvas(canvas);
-  window.addEventListener("keydown", handleInput);
+  // canvas.addEventListener("click", handleClickOrTap);
+  // canvas.addEventListener("touchstart", handleClickOrTap);
   startGame();
 }

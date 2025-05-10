@@ -4,8 +4,7 @@ import MobileControls from "../components/MobileControls.astro";
 ---
 
 <script>
-  import { initGame, handleInput } from "../games/snake/snake";
-
+  import { initGame } from "../games/snake/snake";
   initGame();
 </script>
 
@@ -25,13 +24,13 @@ import MobileControls from "../components/MobileControls.astro";
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     height: 100vh;
     margin: 0 auto;
     background-color: #1a2a1a;
     font-family: "Courier New", Courier, monospace;
     color: #4aff4a;
   }
+
   canvas {
     width: 100%;
     height: auto;
