@@ -1,17 +1,22 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import MobileControls from "../components/MobileControls.astro";
 ---
 
 <script>
-  import { init as startSnakeGame } from "../games/snake/snake";
-  startSnakeGame();
+  import { initGame, handleInput } from "../games/snake/snake";
+
+  initGame();
 </script>
 
 <Layout>
   <main>
     <h1>Snake game</h1>
     <div id="score">Score: 0</div>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="game-container">
+      <canvas id="canvas" width="400" height="400"></canvas>
+    </div>
+    <MobileControls />
   </main>
 </Layout>
 
@@ -22,16 +27,21 @@ import Layout from "../layouts/Layout.astro";
     align-items: center;
     justify-content: center;
     height: 100vh;
-    margin: 0;
+    margin: 0 auto;
     background-color: #1a2a1a;
     font-family: "Courier New", Courier, monospace;
     color: #4aff4a;
   }
   canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
     border: 2px solid #4aff4a;
     background-color: #1a2a1a;
     image-rendering: pixelated;
   }
+
   #score {
     font-size: 24px;
     margin-bottom: 10px;

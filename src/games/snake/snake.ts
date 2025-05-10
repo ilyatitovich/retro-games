@@ -1,6 +1,7 @@
+import { resizeCanvas } from "../../utils/resizeCanvas";
 const GAME_SPEED = 100; // Milliseconds per frame
 
-const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
 const scoreDisplay = document.getElementById("score");
 
@@ -133,10 +134,10 @@ function update() {
   const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
   // Check wall collision
-  //   if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-  //     endGame();
-  //     return;
-  //   }
+  // if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+  //   endGame();
+  //   return;
+  // }
   if (head.x < 0) head.x = tileCount - 1;
   else if (head.x >= tileCount) head.x = 0;
   if (head.y < 0) head.y = tileCount - 1;
@@ -190,11 +191,11 @@ function endGame() {
   gameOver = true;
   playSound(220, 0.3);
   document.removeEventListener("keydown", handleInput);
-  document.addEventListener("keydown", handleGameOverKey);
+  enableGameOverInput();
   drawGameOverMenu();
 }
 
-function handleInput(e: KeyboardEvent) {
+export function handleInput(e: KeyboardEvent) {
   if (gameOver || gameEnded) return;
   switch (e.key) {
     case "ArrowUp":
@@ -233,7 +234,7 @@ function handleGameOverKey(e: KeyboardEvent) {
       break;
     case "Enter":
       if (gameOverSelection === 0) {
-        init(); // Yes: restart
+        startGame(); // Yes: restart
       } else {
         gameEnded = true; // No: stop game
         document.removeEventListener("keydown", handleGameOverKey);
@@ -242,11 +243,7 @@ function handleGameOverKey(e: KeyboardEvent) {
   }
 }
 
-// Handle input
-document.addEventListener("keydown", handleInput);
-
-// Initialize game
-export function init() {
+function startGame() {
   cancelAnimationFrame(animationFrameId!);
   snake = [
     { x: 10, y: 10 },
@@ -262,8 +259,8 @@ export function init() {
   gameEnded = false;
   gameOverSelection = 0;
   scoreDisplay!.textContent = `Score: ${score}`;
-  document.removeEventListener("keydown", handleGameOverKey);
-  document.addEventListener("keydown", handleInput);
+  disableGameOverInput();
+  window.addEventListener("keydown", handleInput);
   lastUpdate = performance.now();
   animationFrameId = requestAnimationFrame(gameLoop);
 }
@@ -290,4 +287,58 @@ function render() {
   if (gameEnded) {
     handleGameEnded();
   }
+}
+
+function handleClickOrTap(e: MouseEvent | TouchEvent) {
+  if (!gameOver || gameEnded) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
+  const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
+
+  const x = (clientX - rect.left) * (canvas.width / rect.width);
+  const y = (clientY - rect.top) * (canvas.height / rect.height);
+
+  const buttonWidth = 80;
+  const buttonHeight = 40;
+  const yesX = canvas.width / 2 - 100;
+  const noX = canvas.width / 2 + 20;
+  const buttonY = canvas.height / 2 + 20;
+
+  if (
+    x >= yesX &&
+    x <= yesX + buttonWidth &&
+    y >= buttonY &&
+    y <= buttonY + buttonHeight
+  ) {
+    startGame(); // Restart game
+  } else if (
+    x >= noX &&
+    x <= noX + buttonWidth &&
+    y >= buttonY &&
+    y <= buttonY + buttonHeight
+  ) {
+    gameEnded = true;
+    document.removeEventListener("keydown", handleGameOverKey);
+  }
+}
+
+function enableGameOverInput() {
+  canvas.addEventListener("click", handleClickOrTap);
+  canvas.addEventListener("touchstart", handleClickOrTap);
+  document.removeEventListener("keydown", handleInput);
+  document.addEventListener("keydown", handleGameOverKey);
+}
+
+function disableGameOverInput() {
+  canvas.removeEventListener("click", handleClickOrTap);
+  canvas.removeEventListener("touchstart", handleClickOrTap);
+  document.removeEventListener("keydown", handleGameOverKey);
+  document.addEventListener("keydown", handleInput);
+}
+
+export function initGame() {
+  resizeCanvas(canvas);
+  window.addEventListener("keydown", handleInput);
+  startGame();
 }
